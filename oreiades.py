@@ -16,6 +16,10 @@ class MessageCreate():
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
 
+        if not self.to: raise ValueError("Recipient 'to' is required.")
+        if not self.template: raise ValueError("Template is required.")
+        if self.channel not in ("email", "whatsapp"): raise ValueError("Invalid channel.")
+
 class MessageResponse():
     def __init__(self, **kwargs):
         self.id: int = kwargs.get("id", 0)
