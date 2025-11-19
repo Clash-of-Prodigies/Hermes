@@ -6,17 +6,7 @@ from psycopg.rows import dict_row
 from typing import Optional, Dict, Any
 load_dotenv()
 
-
-# --- Message Schemas ---
-# class MessageCreate():
-#     def __init__(self, channel: str, to: str, template: str, locale: Optional[str] = "en", data: Dict[str, Any] = {}, idempotency_key: Optional[str] = None):
-#         self.channel = channel
-#         self.to = to
-#         self.template = template
-#         self.locale = locale
-#         self.data = data
-#         self.idempotency_key = idempotency_key
-
+# ---- Message Schemas ----
 class MessageCreate():
     def __init__(self, **kwargs):
         self.channel: str = kwargs.get("channel", "email")
@@ -45,34 +35,8 @@ class MessageResponse():
             "idempotency_key": self.idempotency_key,
         }
 
-def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
-    """
-    Fetch environment variables, supporting multiple variables separated by a delimiter.
 
-    Args:
-        param (str): The environment variable name(s), separated by the delimiter if multiple.
-        default (str): The default value(s) to use if the environment variable is not set.
-                       If multiple, use the same delimiter as for `param`.
-        delimiter (str): The delimiter used to separate multiple variable names and defaults.
-
-    Returns:
-        str: The value(s) of the environment variable(s) or the default(s),
-             joined by the delimiter if multiple.
-    """
-
-    params = [p.strip() for p in param.split(delimiter)]
-    defaults = [d.strip() for d in default.split(delimiter)] if default is not None else []
-
-    if len(defaults) < len(params):
-        defaults.extend([""] * (len(params) - len(defaults)))
-
-    values = []
-    for name, d in zip(params, defaults):
-        env_value = os.getenv(name)
-        values.append(env_value if env_value is not None else d)
-
-    return delimiter.join(values)
-
+# ---- Database operations ----
 def get_connection() -> Connection:
     """
     Establish and return a new database connection using environment variables.
@@ -139,7 +103,6 @@ def get_next_queued_message(conn: Connection):
     with conn.cursor(row_factory=dict_row) as cur:
         cur.execute(
             """
-            BEGIN;
             SELECT * FROM messages
             WHERE status = 'queued'
             ORDER BY created_at
@@ -149,7 +112,6 @@ def get_next_queued_message(conn: Connection):
         )
         row = cur.fetchone()
         if not row:
-            cur.execute("COMMIT;")
             return None
 
         # mark sending
@@ -231,3 +193,31 @@ def health_check() -> bool:
         if not os.getenv(var):
             raise EnvironmentError(f"Environment variable {var} is not set.")
     return True
+
+def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
+    """
+    Fetch environment variables, supporting multiple variables separated by a delimiter.
+
+    Args:
+        param (str): The environment variable name(s), separated by the delimiter if multiple.
+        default (str): The default value(s) to use if the environment variable is not set.
+                       If multiple, use the same delimiter as for `param`.
+        delimiter (str): The delimiter used to separate multiple variable names and defaults.
+
+    Returns:
+        str: The value(s) of the environment variable(s) or the default(s),
+             joined by the delimiter if multiple.
+    """
+
+    params = [p.strip() for p in param.split(delimiter)]
+    defaults = [d.strip() for d in default.split(delimiter)] if default is not None else []
+
+    if len(defaults) < len(params):
+        defaults.extend([""] * (len(params) - len(defaults)))
+
+    values = []
+    for name, d in zip(params, defaults):
+        env_value = os.getenv(name)
+        values.append(env_value if env_value is not None else d)
+
+    return delimiter.join(values)
