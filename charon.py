@@ -27,10 +27,11 @@ def process_one(conn):
                 to_email=msg["to_address"],
                 subject=subject,
                 data=data,
-                template_name='sample'
+                template_name=msg["template"],
             )
         except Exception as e:
             logging.error(f"Error sending email for message {msg['id']}: {e}")
+            raise
         else:
             oreiades.mark_sent(conn, msg["id"])
             logging.info(f"Message {msg['id']} sent.")
