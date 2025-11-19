@@ -1,4 +1,3 @@
-# app/adapters/email_gmail.py
 import ssl
 import smtplib
 from email.message import EmailMessage
@@ -15,14 +14,25 @@ class GmailEmailAdapter:
         self.user = user
         self.password = password
 
-    def send_email(self, to_email: str, subject: str, text_body: str, html_body: str | None = None):
+    def render_template(self, data: dict, template_name: str = "default.html",) -> str:
+        try:
+            with open(f"templates/{template_name}.html", "r") as f: template = f.read()
+            for key, value in data.items():
+                template = template.replace(f"{{{{{key}}}}}", str(value))
+            return template
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Template {template_name} not found.")
+        except Exception as e:
+            return f"<p>Error rendering template: {e}</p>"
+
+    def send_email(self, to_email: str, subject: str, data: dict, template_name: str):
         msg = EmailMessage()
-        msg["From"] = self.user
+        msg["From"] = f'Prodiy {self.user}'
         msg["To"] = to_email
         msg["Subject"] = subject
-        msg.set_content(text_body)
-        if html_body:
-            msg.add_alternative(html_body, subtype="html")
+        msg.set_content("This email requires an HTML viewer.")
+        html_body = self.render_template(data=data, template_name=template_name)
+        msg.add_alternative(html_body, subtype="html")
 
         context = ssl.create_default_context()
         with smtplib.SMTP(self.host, self.port) as server:
