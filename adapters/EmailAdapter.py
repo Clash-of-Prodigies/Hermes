@@ -2,7 +2,7 @@ import ssl
 import smtplib
 from email.message import EmailMessage
 
-import oreiades
+from .. import oreiades
 
 class GmailEmailAdapter:
     def __init__(self):
@@ -23,11 +23,11 @@ class GmailEmailAdapter:
         except FileNotFoundError:
             raise FileNotFoundError(f"Template {template_name} not found.")
         except Exception as e:
-            return f"<p>Error rendering template: {e}</p>"
+            raise RuntimeError(f"Error rendering template: {e}")
 
     def send_email(self, to_email: str, subject: str, data: dict, template_name: str):
         msg = EmailMessage()
-        msg["From"] = f'Prodiy {self.user}'
+        msg["From"] = f'Prodigy <{self.user}>'
         msg["To"] = to_email
         msg["Subject"] = subject
         msg.set_content("This email requires an HTML viewer.")
