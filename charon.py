@@ -1,7 +1,7 @@
 import time
 import logging
 import oreiades
-from adapters.EmailAdapter import GmailEmailAdapter
+from adapters.EmailAdapter import *
 
 logging.basicConfig(
     level=logging.INFO,
