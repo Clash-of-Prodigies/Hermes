@@ -12,6 +12,7 @@ class MessageCreate():
         self.channel: str = kwargs.get("channel", "email")
         self.to: str = kwargs.get("to", "")
         self.template: str = kwargs.get("template", "")
+        self.subject: str = kwargs.get("subject", "")
         self.locale: Optional[str] = kwargs.get("locale", "en")
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
