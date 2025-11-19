@@ -1,14 +1,14 @@
 import time
 import logging
 import oreiades
-from adapters.EmailAdapter import *
+from adapters import EmailAdapter
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-email_adapter = GmailEmailAdapter()
+email_adapter = EmailAdapter.GmailEmailAdapter()
 
 def process_one(conn):
     msg = oreiades.get_next_queued_message(conn)
@@ -19,19 +19,21 @@ def process_one(conn):
 
     try:
         # Render template placeholder
-        subject = f"Template: {msg['template']}"
-        text_body = f"Data: {msg['data']}"
-        html_body = None
+        subject = f"Template: {msg['subject']}"
+        data = msg['data']
 
-        email_adapter.send_email(
-            to_email=msg["to_address"],
-            subject=subject,
-            text_body=text_body,
-            html_body=html_body,
-        )
-
-        oreiades.mark_sent(conn, msg["id"])
-        logging.info(f"Message {msg['id']} sent.")
+        try:
+            email_adapter.send_email(
+                to_email=msg["to_address"],
+                subject=subject,
+                data=data,
+                template_name='sample'
+            )
+        except Exception as e:
+            logging.error(f"Error sending email for message {msg['id']}: {e}")
+        else:
+            oreiades.mark_sent(conn, msg["id"])
+            logging.info(f"Message {msg['id']} sent.")
 
     except Exception as e:
         logging.exception(f"Failed sending message {msg['id']}")
@@ -44,7 +46,7 @@ def process_one(conn):
     return True
 
 
-def main_loop():
+def main():
     with oreiades.get_connection() as conn:
         while True:
             worked = process_one(conn)
@@ -52,4 +54,4 @@ def main_loop():
                 time.sleep(2)
 
 if __name__ == "__main__":
-    main_loop()
+    main()
