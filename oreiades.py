@@ -1,8 +1,9 @@
 import os
+import json
 from dotenv import load_dotenv
-from psycopg.errors import UniqueViolation
 from psycopg import Connection, connect as pg_connect
 from psycopg.rows import dict_row
+from psycopg.errors import UniqueViolation, OperationalError
 from typing import Optional, Dict, Any
 load_dotenv()
 
@@ -50,13 +51,16 @@ def get_connection() -> Connection:
         "DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASSWORD"
     ).split(",")
 
-    conn = pg_connect(
+    try:
+        conn = pg_connect(
         host=db_host,
         port=int(db_port),
         dbname=db_name,
         user=db_user,
         password=db_password,
-    )
+        )
+    except OperationalError as e:
+        raise ConnectionError(f"Failed to connect to the database: {e}")
     return conn
 
 def create_message(conn: Connection, payload: MessageCreate):
@@ -78,7 +82,7 @@ def create_message(conn: Connection, payload: MessageCreate):
                     payload.to,
                     payload.template,
                     payload.locale,
-                    payload.data,
+                    json.dumps(payload.data),
                     payload.idempotency_key,
                 ),
             )
@@ -222,7 +226,7 @@ def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
 
     values = []
     for name, d in zip(params, defaults):
-        env_value = os.getenv(name)
-        values.append(env_value if env_value is not None else d)
+        env_value = os.getenv(name, d)
+        values.append(env_value)
 
     return delimiter.join(values)
