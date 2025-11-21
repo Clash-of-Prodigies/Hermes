@@ -48,11 +48,16 @@ def process_one(conn):
 
 
 def main():
-    with oreiades.get_connection() as conn:
-        while True:
-            worked = process_one(conn)
-            if not worked:
-                time.sleep(2)
+    logging.info("Starting worker...")
+    while True:
+        try:
+            with oreiades.get_connection() as conn:
+                worked = process_one(conn)
+                if not worked: time.sleep(2)
+        except KeyboardInterrupt:
+            logging.info("Shutting down worker.")
+            break
+        except Exception as e: logging.exception(f"Worker encountered an error: {e}")
 
 if __name__ == "__main__":
     main()
