@@ -1,8 +1,7 @@
 import ssl
 import smtplib
 from email.message import EmailMessage
-
-from .. import oreiades
+import oreiades
 
 class GmailEmailAdapter:
     def __init__(self):
