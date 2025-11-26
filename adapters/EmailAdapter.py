@@ -24,10 +24,10 @@ class GmailEmailAdapter:
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send_email(self, to_email: str, subject: str, data: dict, template_name: str):
+    def send(self, to: str, subject: str, data: dict, template_name: str):
         msg = EmailMessage()
         msg["From"] = f'Prodigy <{self.user}>'
-        msg["To"] = to_email
+        msg["To"] = to
         msg["Subject"] = subject
         msg.set_content("This email requires an HTML viewer.")
         html_body = self.render_template(data=data, template_name=template_name)
