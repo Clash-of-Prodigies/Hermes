@@ -1,33 +1,38 @@
 import time
 import logging
 import oreiades
-from adapters import EmailAdapter
+from adapters import ADAPTERS
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-email_adapter = EmailAdapter.GmailEmailAdapter()
-
 def process_one(conn):
     msg = oreiades.get_next_queued_message(conn)
     if not msg:
         return False
+    
+    channel = msg.get("channel", "email")
+    adapter = ADAPTERS.get(channel)
+
+    if not adapter:
+        logging.error(f"No adapter found for channel: {channel}")
+        oreiades.mark_failed(conn, msg["id"], f"No adapter for channel: {channel}")
+        return True
 
     logging.info(f"Processing message id={msg['id']} to={msg['to_address']}")
 
     try:
-        # Render template placeholder
-        subject = f"Template: {msg['subject']}"
-        data = msg['data']
+        subject = f"Template: {msg.get('template', 'default')}"
+        data = msg.get("data", {})
 
         try:
-            email_adapter.send_email(
-                to_email=msg["to_address"],
+            adapter.send(
+                to=msg.get("to_address", ""),
                 subject=subject,
                 data=data,
-                template_name=msg["template"],
+                template_name=msg.get("template", "default"),
             )
         except Exception as e:
             logging.error(f"Error sending email for message {msg['id']}: {e}")
