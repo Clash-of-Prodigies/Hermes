@@ -7,19 +7,36 @@ from psycopg.errors import UniqueViolation, OperationalError
 from typing import Optional, Dict, Any
 load_dotenv()
 
+# Subject to Template
+Translator: Dict[str, Dict[str, str]] = {
+    "email": {
+        "start": "welcome",
+        "welcome": "welcome",
+        "default": "default",
+        "test": "test",
+        "password reset": "password_reset",
+    },
+    "telegram": {
+        "verify": "welcome",
+        "default": "default",
+        "start": "default",
+        "ping": "ping",
+        "health": "health",
+        "password reset": "password_reset",
+    },
+}
+
 # ---- Message Schemas ----
 class MessageCreate():
     def __init__(self, **kwargs):
         self.channel: str = kwargs.get("channel", "email")
         self.to: str = kwargs.get("to", "")
-        self.template: str = kwargs.get("template", "")
-        self.subject: str = kwargs.get("subject", "")
-        self.locale: Optional[str] = kwargs.get("locale", "en")
+        self.subject: str = kwargs.get("subject", "No Subject")
+        self.template: str = Translator.get(self.channel, {}).get(self.subject.lower().strip("/"), "default")
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
 
         if not self.to: raise ValueError("Recipient 'to' is required.")
-        if not self.template: raise ValueError("Template is required.")
 
 class MessageResponse():
     def __init__(self, **kwargs):
@@ -72,8 +89,8 @@ def create_message(conn: Connection, payload: MessageCreate):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO messages (channel, to_address, subject, template, locale, data, status, idempotency_key)
-                VALUES (%s, %s, %s, %s, %s, %s::jsonb, 'queued', %s)
+                INSERT INTO messages (channel, to_address, subject, template, data, status, idempotency_key)
+                VALUES (%s, %s, %s, %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
                 (
@@ -81,7 +98,6 @@ def create_message(conn: Connection, payload: MessageCreate):
                     payload.to,
                     payload.subject,
                     payload.template,
-                    payload.locale,
                     json.dumps(payload.data),
                     payload.idempotency_key,
                 ),
