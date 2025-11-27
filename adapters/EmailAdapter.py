@@ -1,3 +1,4 @@
+import os
 import ssl
 import smtplib
 from email.message import EmailMessage
@@ -15,7 +16,8 @@ class GmailEmailAdapter:
 
     def render_template(self, data: dict, template_name: str = "default.html",) -> str:
         try:
-            with open(f"templates/{template_name}.html", "r") as f: template = f.read()
+            template_name = os.path.join("templates", "email", template_name)
+            with open(f"{template_name}.html", "r") as f: template = f.read()
             for key, value in data.items():
                 template = template.replace(f"{{{{{key}}}}}", str(value))
             return template
