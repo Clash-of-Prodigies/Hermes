@@ -24,7 +24,7 @@ def process_one(conn):
     logging.info(f"Processing message id={msg['id']} to={msg['to_address']}")
 
     try:
-        subject = f"Template: {msg.get('template', 'default')}"
+        subject = msg.get('subject', 'No Subject')
         data = msg.get("data", {})
 
         try:
