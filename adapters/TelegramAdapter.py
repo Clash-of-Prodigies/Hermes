@@ -3,7 +3,7 @@ import os
 import requests
 import logging
 
-import oreiades  # for environmentals()
+import oreiades
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,21 @@ class TelegramAdapter:
         if not self.token:
             logger.warning("TELEGRAM_BOT_TOKEN is not set. TelegramAdapter will not be able to send messages.")
 
-    def render_template(self, subject: str, data: dict, template_name: str) -> str:
+    def bot_commands(self, command_name: str, command_payload: dict):
+        if command_name == "/ping":
+            user_id = command_payload.get("chat_id", "")
+            command_payload.clear()
+            command_payload["chat_id"] = user_id
+        elif command_name == "/verify":
+            user_id = command_payload.get("chat_id", "")
+            command_payload.clear()
+            command_payload["chat_id"] = user_id
+        else:
+            pass
+
+        return command_payload
+
+    def render_template(self, data: dict, template_name: str) -> str:
         def escape_markdown_v2(text: str) -> str:
             """
             Escape Telegram MarkdownV2 special characters in a value.
@@ -47,25 +61,25 @@ class TelegramAdapter:
             return "".join(escaped)
 
         try:
-            data["subject"] = subject
             template_name = os.path.join("templates", "telegram", template_name)
             with open(f"{template_name}.md", "r") as f: template = f.read()
             for key, value in data.items():
-                template = template.replace(f"{{{{{key}}}}}", escape_markdown_v2(str(value)))
+                template = template.replace(f"%%{key}%%", escape_markdown_v2(str(value)))
             return template
         except FileNotFoundError:
             raise FileNotFoundError(f"Template {template_name}.md not found.")
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send(self, to: str, subject: str, data: dict, template_name: str, ):
+    def send(self, to: str, subject: str, data: dict, template_name: str):
         """
         Sends a message via Telegram Bot API to a given chat_id.
         """
         if not self.token:
             raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
 
-        text = self.render_template(subject, data or {}, template_name)
+        data = self.bot_commands(subject, data)
+        text = self.render_template(data or {}, template_name)
 
         url = f"{self.base_url}/bot{self.token}/sendMessage"
         payload = {
