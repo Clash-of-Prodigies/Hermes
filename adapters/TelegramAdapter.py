@@ -6,6 +6,14 @@ import oreiades
 
 logger = logging.getLogger(__name__)
 
+SubjectToTemplate = {
+        "welcome": "welcome",
+        "default": "default",
+        "start": "default",
+        "ping": "ping",
+        "health": "health",
+        "password reset": "password_reset",
+}
 
 class TelegramAdapter:
     """
@@ -81,7 +89,7 @@ class TelegramAdapter:
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send(self, to: str, subject: str, data: dict, template_name: str):
+    def send(self, to: str, subject: str, data: dict):
         """
         Sends a message via Telegram Bot API to a given chat_id.
         """
@@ -89,7 +97,7 @@ class TelegramAdapter:
             raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
 
         data = self.bot_commands(subject, data)
-        text = self.render_template(data or {}, template_name)
+        text = self.render_template(data or {}, SubjectToTemplate.get(subject.strip('/'), 'default'))
 
         url = f"{self.base_url}/bot{self.token}/sendMessage"
         payload = {
