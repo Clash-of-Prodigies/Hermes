@@ -13,13 +13,13 @@ Hermes handles inbound webhooks (for verification flows), outbound queueing, ide
 # **Architecture Overview**
 
 ```
-           ┌────────────┐
+           ┌─────────────┐
            │ Upstream    │
            │ Services    │
            └──────┬──────┘
                   │   POST /messages
                   ▼
-           ┌────────────┐
+           ┌─────────────┐
            │  Hermes     │  Flask HTTP API
            │  (API)      │
            └──────┬──────┘
@@ -34,12 +34,12 @@ Hermes handles inbound webhooks (for verification flows), outbound queueing, ide
         ┌────────────────────┐
         │     Charon         │  Background worker
         │  (Dispatcher)      │
-        └──────┬────────────┘
+        └──────┬─────────────┘
                │  adapter.send()
                ▼
        ┌──────────────────┐         ┌───────────────────┐
-       │ Email Adapter     │ SMTP    │ Telegram Adapter  │ Bot API
-       │ (Gmail SMTP)      ├────────►│ (MarkdownV2)      ├─────────► Users
+       │ Email Adapter    │ SMTP    │ Telegram Adapter  │ Bot API
+       │ (Gmail SMTP)     ├────────►│ (MarkdownV2)      ├─────────► Users
        └──────────────────┘         └───────────────────┘
 ```
 
@@ -57,8 +57,6 @@ Hermes handles inbound webhooks (for verification flows), outbound queueing, ide
 * Enforces idempotency using `idempotency_key`
 * Provides `/health` endpoint
 
-(Implementation: )
-
 ---
 
 ### **Charon (Worker layer)**
@@ -68,8 +66,6 @@ Hermes handles inbound webhooks (for verification flows), outbound queueing, ide
 * Dispatches messages to the appropriate adapter (`email`, `telegram`, etc.)
 * Retries messages on failure
 * Marks messages as `sent`, `failed`, or increments `attempts`
-
-(Implementation: )
 
 ---
 
@@ -85,8 +81,6 @@ Provides:
 * Template resolution logic
 * Centralized environment variable management
 
-(Implementation: )
-
 ---
 
 ### **Adapters**
@@ -97,8 +91,6 @@ Provides:
 * Sends mail via SMTP + TLS
 * Supports custom subject and embedded variables
 
-(Implementation: )
-
 #### **Telegram Adapter (Bot API)**
 
 * Renders MarkdownV2 templates with safe escaping
@@ -106,7 +98,6 @@ Provides:
 * Sends via Telegram’s Bot API
 * Used for verification and notifications
 
-(Implementation: )
 
 ---
 
@@ -241,7 +232,7 @@ Use `%%key%%` placeholders which are Markdown-safe.
 templates/email/*.html
 ```
 
-Use `{{key}}` placeholders.
+Use `%%key%%` placeholders.
 
 Both template systems are rendered inside their respective adapters.
 
@@ -289,7 +280,7 @@ python charon.py
 * `EMAIL_USER`
 * `EMAIL_APP_PASSWORD`
 * `TELEGRAM_BOT_TOKEN`
-* `TELEGRAM_WEBHOOK_SECRET`
+* `HERMES_SECRET`
 * `MESSAGE_MAX_ATTEMPTS`
 
 ---
