@@ -72,13 +72,14 @@ def create_message(conn: Connection, payload: MessageCreate):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO messages (channel, to_address, template, locale, data, status, idempotency_key)
-                VALUES (%s, %s, %s, %s, %s::jsonb, 'queued', %s)
+                INSERT INTO messages (channel, to_address, subject, template, locale, data, status, idempotency_key)
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
                 (
                     payload.channel,
                     payload.to,
+                    payload.subject,
                     payload.template,
                     payload.locale,
                     json.dumps(payload.data),
