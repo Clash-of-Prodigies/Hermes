@@ -20,7 +20,6 @@ class MessageCreate():
 
         if not self.to: raise ValueError("Recipient 'to' is required.")
         if not self.template: raise ValueError("Template is required.")
-        if self.channel not in ("email", "whatsapp"): raise ValueError("Invalid channel.")
 
 class MessageResponse():
     def __init__(self, **kwargs):
@@ -230,3 +229,27 @@ def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
         values.append(env_value)
 
     return delimiter.join(values)
+
+def bot_commands(command_name: str, command_payload: dict) -> MessageCreate:
+    if command_name == "/start":
+        command_payload["template"] = "welcome"
+        command_payload["subject"] = "Welcome!"
+        command_payload["data"] = {
+            "username": "Benjamin",
+            "role": "admin",
+        }
+    elif command_name == "/verify":
+        command_payload["template"] = "welcome"
+        command_payload["subject"] = "Welcome!"
+        # store chat_id later
+    else:
+        command_payload["template"] = "default"
+        command_payload["subject"] = "Notification"
+
+    return MessageCreate(
+        channel="telegram",
+        to=command_payload["chat_id"],
+        template=command_payload.get("template", "default"),
+        subject=command_payload.get("subject", "Welcome"),
+        data=command_payload.get("data", {}),
+    )
