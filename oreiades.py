@@ -17,7 +17,7 @@ Translator: Dict[str, Dict[str, str]] = {
         "password reset": "password_reset",
     },
     "telegram": {
-        "verify": "welcome",
+        "welcome": "welcome",
         "default": "default",
         "start": "default",
         "ping": "ping",
