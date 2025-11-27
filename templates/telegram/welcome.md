@@ -1,6 +1,10 @@
-Welcome to Clash of Prodigies, {{username}}
+*Telegram verification complete*
 
-You have successfully joined the Clash of Prodigies Telegram bot  
-Here, you can engage in exciting battles, complete quests, and interact with other prodigies  
+Your chat id is now linked to your Prodigy account
 
-To get started, simply use the /help command to see a list of available commands and features  
+Account ID    %%prodigy_id%%
+Account name  %%username%%
+Role          %%role%%
+
+You will start receiving Prodigy notifications in this chat
+If you ever lose access you can remove this chat id on the website and link a new one
