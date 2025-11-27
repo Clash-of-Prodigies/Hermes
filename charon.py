@@ -21,7 +21,7 @@ def process_one(conn):
         oreiades.mark_failed(conn, msg["id"], f"No adapter for channel: {channel}")
         return True
 
-    logging.info(f"Processing message id={msg['id']} to={msg['to_address']}")
+    logging.info(f"Processing message id={msg['id']} to={msg['recipient']}")
 
     try:
         subject = msg.get('subject', 'No Subject')
@@ -29,7 +29,7 @@ def process_one(conn):
 
         try:
             adapter.send(
-                to=msg.get("to_address", ""),
+                to=msg.get("recipient", ""),
                 subject=subject,
                 data=data,
                 template_name=msg.get("template", "default"),

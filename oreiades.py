@@ -42,7 +42,7 @@ class MessageResponse():
     def __init__(self, **kwargs):
         self.id: int = kwargs.get("id", 0)
         self.channel: str = kwargs.get("channel", "")
-        self.to: str = kwargs.get("to_address", "")
+        self.to: str = kwargs.get("recipient", "")
         self.template: str = kwargs.get("template", "")
         self.status: str = kwargs.get("status", "")
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
@@ -89,7 +89,7 @@ def create_message(conn: Connection, payload: MessageCreate):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO messages (channel, to, subject, data, status, idempotency_key)
+                INSERT INTO messages (channel, recipient, subject, data, status, idempotency_key)
                 VALUES (%s, %s, %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
