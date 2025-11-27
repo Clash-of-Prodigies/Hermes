@@ -35,6 +35,14 @@ class TelegramAdapter:
             # else: command_payload['status'] = 'unsuccessful'
             # command_payload['message'] = resp.json().get('message', '')
             pass 
+        elif command_name == "/welcome":
+            prodigy_id = command_payload.get("prodigy_id", "")
+            username = command_payload.get("username", "")
+            role = command_payload.get("role", "")
+            command_payload.clear()
+            command_payload["account_id"] = prodigy_id
+            command_payload["account_name"] = username
+            command_payload["role"] = role
         else:
             pass
 
