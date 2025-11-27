@@ -1,6 +1,6 @@
-*Telegram verification complete*
+*Welcome to Clash of Prodigies*
 
-Your chat id is now linked to your Prodigy account
+Your chat id for Telegram is now linked to your Prodigy account
 
 Account ID    %%prodigy_id%%
 Account name  %%username%%
