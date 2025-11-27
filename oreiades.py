@@ -7,32 +7,12 @@ from psycopg.errors import UniqueViolation, OperationalError
 from typing import Optional, Dict, Any
 load_dotenv()
 
-# Subject to Template
-Translator: Dict[str, Dict[str, str]] = {
-    "email": {
-        "start": "welcome",
-        "welcome": "welcome",
-        "default": "default",
-        "test": "test",
-        "password reset": "password_reset",
-    },
-    "telegram": {
-        "welcome": "welcome",
-        "default": "default",
-        "start": "default",
-        "ping": "ping",
-        "health": "health",
-        "password reset": "password_reset",
-    },
-}
-
 # ---- Message Schemas ----
 class MessageCreate():
     def __init__(self, **kwargs):
         self.channel: str = kwargs.get("channel", "email")
         self.to: str = kwargs.get("to", "")
         self.subject: str = kwargs.get("subject", "No Subject")
-        self.template: str = Translator.get(self.channel, {}).get(self.subject.lower().strip("/"), "default")
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
 
@@ -43,7 +23,6 @@ class MessageResponse():
         self.id: int = kwargs.get("id", 0)
         self.channel: str = kwargs.get("channel", "")
         self.to: str = kwargs.get("recipient", "")
-        self.template: str = kwargs.get("template", "")
         self.status: str = kwargs.get("status", "")
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
 
@@ -52,7 +31,6 @@ class MessageResponse():
             "id": self.id,
             "channel": self.channel,
             "to": self.to,
-            "template": self.template,
             "status": self.status,
             "idempotency_key": self.idempotency_key,
         }
@@ -245,27 +223,3 @@ def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
         values.append(env_value)
 
     return delimiter.join(values)
-
-def bot_commands(command_name: str, command_payload: dict) -> MessageCreate:
-    if command_name == "/start":
-        command_payload["template"] = "welcome"
-        command_payload["subject"] = "Welcome!"
-        command_payload["data"] = {
-            "username": "Benjamin",
-            "role": "admin",
-        }
-    elif command_name == "/verify":
-        command_payload["template"] = "welcome"
-        command_payload["subject"] = "Welcome!"
-        # store chat_id later
-    else:
-        command_payload["template"] = "default"
-        command_payload["subject"] = "Notification"
-
-    return MessageCreate(
-        channel="telegram",
-        to=command_payload["chat_id"],
-        template=command_payload.get("template", "default"),
-        subject=command_payload.get("subject", "Welcome"),
-        data=command_payload.get("data", {}),
-    )
