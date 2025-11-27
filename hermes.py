@@ -21,8 +21,8 @@ def health():
         return jsonify({"status": "error", "detail": str(e)}), 500
 
 
-@app.route("/webhooks/email", methods=["POST"])
-def email_webhook():
+@app.route("/enqueue", methods=["POST"])
+def general_webhook():
     try:
         if request.args.get("token") != HERMES_SECRET: return "forbidden", 403
     except Exception: return "forbidden", 403
