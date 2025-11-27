@@ -32,7 +32,6 @@ def process_one(conn):
                 to=msg.get("recipient", ""),
                 subject=subject,
                 data=data,
-                template_name=msg.get("template", "default"),
             )
         except Exception as e:
             logging.error(f"Error sending email for message {msg['id']}: {e}")
