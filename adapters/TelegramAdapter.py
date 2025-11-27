@@ -1,4 +1,3 @@
-# adapters/TelegramAdapter.py
 import os
 import requests
 import logging
@@ -30,9 +29,12 @@ class TelegramAdapter:
             command_payload.clear()
             command_payload["chat_id"] = user_id
         elif command_name == "/verify":
-            user_id = command_payload.get("chat_id", "")
-            command_payload.clear()
-            command_payload["chat_id"] = user_id
+            # resp = requests.post('url', json={''chat_id': command_payload.get('chat_id', '')})
+            # if resp.json().get('status', 'failed') == 'success':
+            #     command_payload['status'] = 'successful'
+            # else: command_payload['status'] = 'unsuccessful'
+            # command_payload['message'] = resp.json().get('message', '')
+            pass 
         else:
             pass
 
