@@ -64,13 +64,7 @@ def telegram_webhook():
         data={"chat_id": chat_id, "text": command_text},
     )
 
-    with oreiades.get_connection() as conn:
-        try:
-            msg_row = oreiades.create_message(conn, payload)
-        except Exception as e:
-            return jsonify({"detail": f"Failed to enqueue message: {e}"}), 500
-    resp = oreiades.MessageResponse(**msg_row).asdict() if msg_row else {}
-    return jsonify(resp), 202
+    return enqueue_message(payload)
 
 def enqueue_message(payload: oreiades.MessageCreate):
     with oreiades.get_connection() as conn:
