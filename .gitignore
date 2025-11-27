@@ -7,3 +7,9 @@
 # Ignore compiled Python files
 __pycache__/
 *.pyc
+
+# Ignore log files
+*.log
+
+# Ignore secret scripts
+secret*
