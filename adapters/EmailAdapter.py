@@ -4,6 +4,14 @@ import smtplib
 from email.message import EmailMessage
 import oreiades
 
+SubjectToTemplate = {
+    "start": "welcome",
+    "welcome": "welcome",
+    "default": "default",
+    "test": "test",
+    "password reset": "password_reset",
+}
+
 class GmailEmailAdapter:
     def __init__(self):
         host, port, user, password = oreiades.environmentals(
@@ -14,7 +22,7 @@ class GmailEmailAdapter:
         self.user = user
         self.password = password
 
-    def render_template(self, data: dict, template_name: str = "default.html",) -> str:
+    def render_template(self, data: dict, template_name: str,) -> str:
         try:
             template_name = os.path.join("templates", "email", template_name)
             with open(f"{template_name}.html", "r") as f: template = f.read()
@@ -26,13 +34,13 @@ class GmailEmailAdapter:
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send(self, to: str, subject: str, data: dict, template_name: str):
+    def send(self, to: str, subject: str, data: dict):
         msg = EmailMessage()
         msg["From"] = f'Prodigy <{self.user}>'
         msg["To"] = to
         msg["Subject"] = subject
         msg.set_content("This email requires an HTML viewer.")
-        html_body = self.render_template(data=data, template_name=template_name)
+        html_body = self.render_template(data, SubjectToTemplate.get(subject, 'default'))
         msg.add_alternative(html_body, subtype="html")
 
         context = ssl.create_default_context()
