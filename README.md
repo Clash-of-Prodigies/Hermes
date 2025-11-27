@@ -325,5 +325,3 @@ By centralizing all outbound notifications, Prodigy stays consistent, reliable, 
 # **Conclusion**
 
 Hermes + Charon form a fully functional, extensible messaging service powering Prodigy’s notification system. The design emphasizes reliability, idempotency, clean separation of concerns, and simple adapter-based extension for new channels.
-
-If you want me to generate a polished `README.md` file with badges, ASCII logos, or installation steps, just say the word.
