@@ -13,6 +13,7 @@ SubjectToTemplate = {
         "ping": "ping",
         "health": "health",
         "password reset": "password_reset",
+        "Verify Your Account": "verify"
 }
 
 class TelegramAdapter:
