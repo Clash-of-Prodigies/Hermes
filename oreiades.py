@@ -1,11 +1,9 @@
 import os
 import json
-from dotenv import load_dotenv
 from psycopg import Connection, connect as pg_connect
 from psycopg.rows import dict_row
 from psycopg.errors import UniqueViolation, OperationalError
 from typing import Optional, Dict, Any
-load_dotenv()
 
 # ---- Message Schemas ----
 class MessageCreate():
