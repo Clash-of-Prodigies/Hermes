@@ -1,8 +1,8 @@
 import os
 import requests
 import logging
-
 import oreiades
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class TelegramAdapter:
         if not self.token:
             logger.warning("TELEGRAM_BOT_TOKEN is not set. TelegramAdapter will not be able to send messages.")
 
-    def bot_commands(self, command_name: str, command_payload: dict):
+    def bot_commands(self, to: str, sender: str, command_name: str, command_payload: dict):
         if command_name == "/ping":
             user_id = command_payload.get("chat_id", "")
             command_payload.clear()
@@ -46,11 +46,10 @@ class TelegramAdapter:
             pass 
         elif command_name == "/welcome":
             prodigy_id = command_payload.get("prodigy_id", "")
-            username = command_payload.get("username", "")
             role = command_payload.get("role", "")
             command_payload.clear()
             command_payload["account_id"] = prodigy_id
-            command_payload["account_name"] = username
+            command_payload["account_name"] = to
             command_payload["role"] = role
         else:
             pass
@@ -90,29 +89,30 @@ class TelegramAdapter:
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send(self, to: str, subject: str, data: dict):
+    def send(self, to: list[str], sender: str, subject: str, data: dict):
         """
         Sends a message via Telegram Bot API to a given chat_id.
         """
         if not self.token:
             raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
 
-        data = self.bot_commands(subject, data)
-        text = self.render_template(data or {}, SubjectToTemplate.get(subject.strip('/'), 'default'))
-
         url = f"{self.base_url}/bot{self.token}/sendMessage"
-        payload = {
-            "chat_id": to,
-            "text": text,
-            "parse_mode": "MarkdownV2",
-        }
 
-        resp = requests.post(url, json=payload, timeout=10)
+        for name in to:
+            data = self.bot_commands(name, sender, subject, data)
+            text = self.render_template(data or {}, SubjectToTemplate.get(subject.strip('/'), 'default'))
+            
+            payload = {
+                "chat_id": oreiades.get_address_by_name(name, "telegram"),
+                "text": text,
+                "parse_mode": "MarkdownV2",
+            }
 
-        try:
-            resp.raise_for_status()
-        except Exception:
-            logger.error("Telegram sendMessage failed: %s", resp.text)
-            raise
+            resp = requests.post(url, json=payload, timeout=10)
 
-        return resp.json()
+            try:
+                resp.raise_for_status()
+            except Exception:
+                logger.error("Telegram sendMessage failed: %s", resp.text)
+                raise
+            time.sleep(0.5)

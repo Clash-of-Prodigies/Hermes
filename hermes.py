@@ -49,6 +49,7 @@ def telegram_webhook():
     chat = message.get("chat") or {}
     chat_id = chat.get("id")
     text = message.get("text") or ""
+    sender = message.get("sender") or ""
 
     if not chat_id or not isinstance(text, str):
         return "ok", 200
@@ -59,7 +60,8 @@ def telegram_webhook():
     
     payload = oreiades.MessageCreate(
         channel="telegram",
-        to=str(chat_id),
+        to=[str(chat_id)],
+        sender=str(sender),
         subject=command_name,
         data={"chat_id": chat_id, "text": command_text},
     )

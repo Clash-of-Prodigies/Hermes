@@ -29,7 +29,7 @@ def process_one(conn):
 
         try:
             adapter.send(
-                to=msg.get("recipient", ""),
+                to=msg.get("recipients", []),
                 subject=subject,
                 data=data,
             )

@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from psycopg import Connection, connect as pg_connect
 from psycopg.rows import dict_row
 from psycopg.errors import UniqueViolation, OperationalError
@@ -9,7 +10,8 @@ from typing import Optional, Dict, Any
 class MessageCreate():
     def __init__(self, **kwargs):
         self.channel: str = kwargs.get("channel", "email")
-        self.to: str = kwargs.get("to", "")
+        self.sender: str = kwargs.get("sender", "Clash of Prodigies")
+        self.to: list = kwargs.get("to", [])
         self.subject: str = kwargs.get("subject", "No Subject")
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
@@ -20,7 +22,8 @@ class MessageResponse():
     def __init__(self, **kwargs):
         self.id: int = kwargs.get("id", 0)
         self.channel: str = kwargs.get("channel", "")
-        self.to: str = kwargs.get("recipient", "")
+        self.sender: str = kwargs.get("sender", "")
+        self.to: str = kwargs.get("recipient", [])
         self.status: str = kwargs.get("status", "")
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
 
@@ -66,12 +69,12 @@ def create_message(conn: Connection, payload: MessageCreate):
             cur.execute(
                 """
                 INSERT INTO messages (channel, recipient, subject, data, status, idempotency_key)
-                VALUES (%s, %s, %s, %s::jsonb, 'queued', %s)
+                VALUES (%s, %s::jsonb, %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
                 (
                     payload.channel,
-                    payload.to,
+                    json.dumps(payload.to),
                     payload.subject,
                     json.dumps(payload.data),
                     payload.idempotency_key,
@@ -94,6 +97,18 @@ def get_message_by_idempotency(conn: Connection, key: str):
             "SELECT * FROM messages WHERE idempotency_key = %s;", (key,)
         )
         return cur.fetchone()
+
+
+def get_address_by_name(name: str, adapter: str = "email") -> str:
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT * FROM credentials WHERE username = %s;", (name,)
+            )
+            row = cur.fetchone()
+            if not row:
+                raise ValueError(f"No contact found for {adapter} address: {name}")
+            return row[adapter]
 
 
 def get_next_queued_message(conn: Connection):
@@ -182,13 +197,7 @@ def health_check() -> bool:
     """
     Simple health check to verify that required environment variables are set.
     """
-    required_vars = [
-        "EMAIL_SMTP_HOST",
-        "EMAIL_SMTP_PORT",
-        "EMAIL_USER",
-        "EMAIL_APP_PASSWORD",
-        "MESSAGE_MAX_ATTEMPTS",
-    ]
+    required_vars = []
     for var in required_vars:
         if not os.getenv(var):
             raise EnvironmentError(f"Environment variable {var} is not set.")
@@ -221,3 +230,22 @@ def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
         values.append(env_value)
 
     return delimiter.join(values)
+
+def get_email_for_sender(name: str) -> str:
+    url, key = environmentals("EMAIL_SENDER_URL,EMAIL_API_KEY").split(",")
+    headers = {
+            "accept": "application/json",
+            "api-key": key,
+        }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        senders = data.get("senders", [{}])
+        for sender in senders:
+            if sender.get("name") == name:
+                return sender.get("email")
+        raise ValueError(f"Sender {name} not found in response.")
+    except Exception as e:
+        raise RuntimeError(f"Failed to get email for sender {name}: {e}")

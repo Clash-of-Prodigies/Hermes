@@ -1,8 +1,10 @@
 import os
-import ssl
-import smtplib
-from email.message import EmailMessage
+import requests
+import logging
 import oreiades
+import time
+
+logger = logging.getLogger(__name__)
 
 SubjectToTemplate = {
     "start": "welcome",
@@ -15,14 +17,9 @@ SubjectToTemplate = {
 
 class GmailEmailAdapter:
     def __init__(self):
-        host, port, user, password = oreiades.environmentals(
-            "EMAIL_SMTP_HOST,EMAIL_SMTP_PORT,EMAIL_USER,EMAIL_APP_PASSWORD"
-        ).split(",")
-        self.host = host
-        self.port = int(port)
-        self.user = user
-        self.password = password
-
+        url, key = oreiades.environmentals("EMAIL_API_URL, EMAIL_API_KEY").split(",")
+        self.url = url
+        self.key = key
     def render_template(self, data: dict, template_name: str,) -> str:
         try:
             template_name = os.path.join("templates", "email", template_name)
@@ -35,17 +32,36 @@ class GmailEmailAdapter:
         except Exception as e:
             raise RuntimeError(f"Error rendering template: {e}")
 
-    def send(self, to: str, subject: str, data: dict):
-        msg = EmailMessage()
-        msg["From"] = f'Prodigy <{self.user}>'
-        msg["To"] = to
-        msg["Subject"] = subject
-        msg.set_content("This email requires an HTML viewer.")
-        html_body = self.render_template(data, SubjectToTemplate.get(subject, 'default'))
-        msg.add_alternative(html_body, subtype="html")
+    def send(self, to: list[str], sender: str, subject: str, data: dict):
+        sender_email = oreiades.get_email_for_sender(sender)
+        htmlContent = self.render_template(data, SubjectToTemplate.get(subject, 'default'))
+        
+        headers = {
+            "accept": "application/json",
+            "api-key": self.key,
+            "content-type": "application/json",
+        }
+        payload = {
+            "sender": {
+                "name": sender,
+                "email": sender_email,
+            },
+            "to": [
+                {"name": name, "email": oreiades.get_address_by_name(name, "email")}
+                for name in to
+            ],
+            "subject": subject,
+            "textContent": "This email requires an HTML viewer.",
+            "htmlContent": htmlContent,
+        }
 
-        context = ssl.create_default_context()
-        with smtplib.SMTP(self.host, self.port) as server:
-            server.starttls(context=context)
-            server.login(self.user, self.password)
-            server.send_message(msg)
+        resp = requests.post(self.url, headers=headers, json=payload, timeout=10)
+
+        try:
+            resp.raise_for_status()
+        except Exception:
+            logger.error("Telegram sendMessage failed: %s", resp.text)
+            raise
+        time.sleep(0.5)
+
+        
