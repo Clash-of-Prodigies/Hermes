@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify
 import oreiades
 
 TELEGRAM_BOT_TOKEN = oreiades.environmentals("TELEGRAM_BOT_TOKEN", "changeme")
-HERMES_SECRET = oreiades.environmentals("TELEGRAM_WEBHOOK_SECRET", "changeme")
+HERMES_SECRET = oreiades.environmentals("HERMES_SECRET", "changeme")
 
 app = Flask(__name__)
 
