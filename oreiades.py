@@ -1,6 +1,5 @@
 import os
 import json
-import requests
 from psycopg import Connection, connect as pg_connect
 from psycopg.rows import dict_row
 from psycopg.errors import UniqueViolation, OperationalError
@@ -230,22 +229,3 @@ def environmentals(param: str, default: str = "", delimiter: str = ",") -> str:
         values.append(env_value)
 
     return delimiter.join(values)
-
-def get_email_for_sender(name: str) -> str:
-    url, key = environmentals("EMAIL_SENDER_URL,EMAIL_API_KEY").split(",")
-    headers = {
-            "accept": "application/json",
-            "api-key": key,
-        }
-
-    try:
-        resp = requests.get(url, headers=headers, timeout=5)
-        resp.raise_for_status()
-        data = resp.json()
-        senders = data.get("senders", [{}])
-        for sender in senders:
-            if sender.get("name") == name:
-                return sender.get("email")
-        raise ValueError(f"Sender {name} not found in response.")
-    except Exception as e:
-        raise RuntimeError(f"Failed to get email for sender {name}: {e}")

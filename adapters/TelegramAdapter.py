@@ -51,6 +51,7 @@ class TelegramAdapter:
             command_payload["account_id"] = prodigy_id
             command_payload["account_name"] = to
             command_payload["role"] = role
+            command_payload["sender"] = sender
         else:
             pass
 

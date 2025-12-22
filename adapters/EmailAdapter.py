@@ -33,7 +33,6 @@ class GmailEmailAdapter:
             raise RuntimeError(f"Error rendering template: {e}")
 
     def send(self, to: list[str], sender: str, subject: str, data: dict):
-        sender_email = oreiades.get_email_for_sender(sender)
         htmlContent = self.render_template(data, SubjectToTemplate.get(subject, 'default'))
         
         headers = {
@@ -43,8 +42,8 @@ class GmailEmailAdapter:
         }
         payload = {
             "sender": {
-                "name": sender,
-                "email": sender_email,
+                "name": sender.split("<")[0].strip(),
+                "email": sender.split("<")[-1].strip(" >"),
             },
             "to": [
                 {"name": name, "email": oreiades.get_address_by_name(name, "email")}
