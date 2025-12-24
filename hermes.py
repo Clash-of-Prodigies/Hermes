@@ -101,4 +101,4 @@ def enqueue_message(payload: oreiades.MessageCreate):
     return jsonify(resp), 202
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
