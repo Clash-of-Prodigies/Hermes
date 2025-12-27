@@ -23,13 +23,18 @@ def process_one(conn):
 
     logging.info(f"Processing message id={msg['id']} to={msg['recipient']}")
 
+    if not msg.get("recipient"):
+        logging.error(f"Message {msg['id']} has no recipient.")
+        oreiades.mark_failed(conn, msg["id"], "No recipient specified.")
+        return True
+
     try:
         subject = msg.get('subject', 'No Subject')
         data = msg.get("data", {})
 
         try:
             adapter.send(
-                to=msg.get("recipients", []),
+                to=msg.get("recipient", []),
                 sender=msg.get("sender", "Clash of Prodigies"),
                 subject=subject,
                 data=data,
