@@ -59,7 +59,7 @@ class GmailEmailAdapter:
         try:
             resp.raise_for_status()
         except Exception:
-            logger.error("Telegram sendMessage failed: %s", resp.text)
+            logger.error("Email send failed: %s", resp.text)
             raise
         time.sleep(0.5)
 

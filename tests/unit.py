@@ -53,7 +53,7 @@ def enqueue_email():
             "username": "Benjamin",
             "verification_link": "https://prodigy.example/verify?token=test-token",
         },
-        "idempotency_key": "email-verification-test-001",
+        "idempotency_key": "email-verification-test-002",
     }
 
     print("[enqueue_email] About to POST email job to Hermes through Nginx")
@@ -82,7 +82,7 @@ def enqueue_telegram():
             "username": "Benjamin",
             "role": "tester",
         },
-        "idempotency_key": "telegram-default-test-001",
+        "idempotency_key": "telegram-default-test-002",
     }
 
     print("[enqueue_telegram] About to POST Telegram job to Hermes through Nginx")
