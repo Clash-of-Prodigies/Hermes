@@ -30,6 +30,7 @@ def process_one(conn):
         try:
             adapter.send(
                 to=msg.get("recipients", []),
+                sender=msg.get("sender", "Clash of Prodigies"),
                 subject=subject,
                 data=data,
             )

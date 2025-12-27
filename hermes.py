@@ -82,7 +82,7 @@ def telegram_webhook():
     
     payload = oreiades.MessageCreate(
         channel="telegram",
-        to=[str(chat_id)],
+        to=(chat_id),
         sender=str(sender),
         subject=command_name,
         data={"chat_id": chat_id, "text": command_text},
