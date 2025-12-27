@@ -68,7 +68,7 @@ def create_message(conn: Connection, payload: MessageCreate):
             cur.execute(
                 """
                 INSERT INTO messages (channel, recipient, sender, subject, data, status, idempotency_key)
-                VALUES (%s, %s::text[], %s, %s::jsonb, 'queued', %s)
+                VALUES (%s, %s::text[], %s, %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
                 (
