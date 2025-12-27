@@ -10,7 +10,7 @@ class MessageCreate():
     def __init__(self, **kwargs):
         self.channel: str = kwargs.get("channel", "email")
         self.sender: str = kwargs.get("sender", "Clash of Prodigies")
-        self.to: list[str] = kwargs.get("to", [])
+        self.to = str(kwargs.get("to", "")).split(",")
         self.subject: str = kwargs.get("subject", "No Subject")
         self.data: Dict[str, Any] = kwargs.get("data", {})
         self.idempotency_key: Optional[str] = kwargs.get("idempotency_key")
@@ -68,7 +68,7 @@ def create_message(conn: Connection, payload: MessageCreate):
             cur.execute(
                 """
                 INSERT INTO messages (channel, recipient, subject, data, status, idempotency_key)
-                VALUES (%s, %s, %s, %s::jsonb, 'queued', %s)
+                VALUES (%s, %s::text[], %s, %s::jsonb, 'queued', %s)
                 RETURNING *;
                 """,
                 (
