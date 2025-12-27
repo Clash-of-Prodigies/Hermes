@@ -46,6 +46,7 @@ def enqueue_email():
     params = {"token": HERMES_TOKEN}
     payload = {
         "channel": "email",
+        "sender": "Clash of Prodigies <no-reply@clashofprodigies.org>",
         "to": EMAIL_ADDRESS,
         "subject": "Account Verification",
         "data": {
@@ -74,6 +75,7 @@ def enqueue_telegram():
     params = {"token": HERMES_TOKEN}
     payload = {
         "channel": "telegram",
+        "sender": "Clash of Prodigies",
         "to": TELEGRAM_CHAT_ID,
         "subject": "default",  # name of the template
         "data": {
