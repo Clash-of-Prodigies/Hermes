@@ -103,7 +103,9 @@ def get_name_by_address(address: str, adapter: str = "email") -> str:
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
-                "SELECT username FROM credentials WHERE %s = %s;", (adapter, address)
+                """SELECT username FROM credentials WHERE
+                ((email = %s AND %s <> '') OR (telegram = %s AND %s <> ''));""",
+                (address, address, address, address)
             )
             row = cur.fetchone()
             if not row:
