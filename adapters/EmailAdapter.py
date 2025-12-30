@@ -46,8 +46,8 @@ class GmailEmailAdapter:
                 "email": sender.split("<")[-1].strip(" >"),
             },
             "to": [
-                {"name": name, "email": oreiades.get_address_by_name(name, "email")}
-                for name in to
+                {"name": oreiades.get_name_by_address(address, "email"), "email": address}
+                for address in to
             ],
             "subject": subject,
             "textContent": "This email requires an HTML viewer.",

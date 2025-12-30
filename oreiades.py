@@ -99,16 +99,16 @@ def get_message_by_idempotency(conn: Connection, key: str):
         return cur.fetchone()
 
 
-def get_address_by_name(name: str, adapter: str = "email") -> str:
+def get_name_by_address(address: str, adapter: str = "email") -> str:
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
-                "SELECT * FROM credentials WHERE username = %s;", (name,)
+                "SELECT username FROM credentials WHERE %s = %s;", (adapter, address)
             )
             row = cur.fetchone()
             if not row:
-                raise ValueError(f"No contact found for {adapter} address: {name}")
-            return row[adapter]
+                raise ValueError(f"No contact found for {adapter} address: {address}")
+            return row["username"]
 
 
 def get_next_queued_message(conn: Connection):

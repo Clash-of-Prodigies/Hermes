@@ -104,7 +104,7 @@ class TelegramAdapter:
             text = self.render_template(data or {}, SubjectToTemplate.get(subject.strip('/'), 'default'))
             
             payload = {
-                "chat_id": oreiades.get_address_by_name(name, "telegram"),
+                "chat_id": oreiades.get_name_by_address(name, "telegram"),
                 "text": text,
                 "parse_mode": "MarkdownV2",
             }
@@ -116,4 +116,4 @@ class TelegramAdapter:
             except Exception:
                 logger.error("Telegram sendMessage failed: %s", resp.text)
                 raise
-            time.sleep(0.5)
+            time.sleep(float(1/20))  # rate limit: 20 messages per second
