@@ -99,12 +99,13 @@ class TelegramAdapter:
 
         url = f"{self.base_url}/bot{self.token}/sendMessage"
 
-        for name in to:
+        for address in to:
+            name = oreiades.get_name_by_address(address, "telegram")
             data = self.bot_commands(name, sender, subject, data)
             text = self.render_template(data or {}, SubjectToTemplate.get(subject.strip('/'), 'default'))
             
             payload = {
-                "chat_id": oreiades.get_name_by_address(name, "telegram"),
+                "chat_id": address,
                 "text": text,
                 "parse_mode": "MarkdownV2",
             }
