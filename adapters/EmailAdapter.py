@@ -12,7 +12,8 @@ SubjectToTemplate = {
     "default": "default",
     "test": "test",
     "password reset": "password_reset",
-    "Verify Your Account": "verify"
+    "Verify Your Account": "verify",
+    "Welcome to Prodigy!": "welcome",
 }
 
 class GmailEmailAdapter:
